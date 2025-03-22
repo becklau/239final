@@ -1,10 +1,11 @@
 let port, reader, writer;
-let pinsUsed = ["apin0", "apin1", "dpin2", "dpin4", "dpin6"]; 
+let pinsUsed = ["apin0", "apin1", "dpin2", "dpin4", "dpin6"]; // List of pins used in the Arduino
 let sensorData = {}; // Object to store sensor readings
+let connectButton;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  let connectButton = createButton("Connect to Arduino");
+  connectButton = createButton("Connect to Arduino");
   connectButton.position(20, 20);
   connectButton.mousePressed(connectToArduino);
 }
@@ -26,6 +27,7 @@ async function connectToArduino() {
     writer = textEncoder.writable.getWriter();
 
     console.log("Connected to Arduino!");
+    connectButton.remove();
     runSerial();
   } catch (error) {
     console.error("Failed to open serial port:", error);
@@ -85,19 +87,29 @@ function getSensorData(type) {
 
 // Draw sensor data on the canvas
 function draw() {
+  joystickX = getSensorData("analog1");
+  joystickY = getSensorData("analog0");
+  joystickButton = getSensorData("digital6");
+  button1 = getSensorData("digital4");
+  button2 = getSensorData("digital2");
   background(220);
   textSize(14);
+  // let yOffset = 100;
+  // for (let i = 0; i <= 5; i++) {
+  //   text(`A${i}: ${getSensorData(`analog${i}`)}`, 20, yOffset);
+  //   yOffset += 30;
+  // }
 
-  let yOffset = 100;
-  for (let i = 0; i <= 5; i++) {
-    text(`A${i}: ${getSensorData(`analog${i}`)}`, 20, yOffset);
-    yOffset += 30;
-  }
+  // for (let i = 2; i <= 13; i++) {
+  //   text(`D${i}: ${getSensorData(`digital${i}`)}`, 20, yOffset);
+  //   yOffset += 30;
+  // }
+  console.log(joystickX, joystickY, joystickButton, button1, button2);
 
-  for (let i = 2; i <= 13; i++) {
-    text(`D${i}: ${getSensorData(`digital${i}`)}`, 20, yOffset);
-    yOffset += 30;
-  }
+  let mappedX = map(joystickX, 0, 1023, 0+20, width - 20);
+  let mappedY = map(joystickY, 0, 1023, 0+20, height - 20);
+
+  circle(mappedX, mappedY, 20);
 }
 
 // Class to handle line breaks in serial data
