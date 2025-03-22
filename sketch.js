@@ -2,12 +2,17 @@ let port, reader, writer;
 let pinsUsed = ["apin0", "apin1", "dpin2", "dpin4", "dpin6"]; // List of pins used in the Arduino
 let sensorData = {}; // Object to store sensor readings
 let connectButton;
+let prevX, prevY;
+let isConnected = false; // Flag to indicate if Arduino is connected
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   connectButton = createButton("Connect to Arduino");
   connectButton.position(20, 20);
   connectButton.mousePressed(connectToArduino);
+
+  prevX = 0+20;
+  prevY = height-20;
 }
 
 // Connect to Arduino and set up serial communication
@@ -28,6 +33,7 @@ async function connectToArduino() {
 
     console.log("Connected to Arduino!");
     connectButton.remove();
+    isConnected = true; // Set flag to true when connected
     runSerial();
   } catch (error) {
     console.error("Failed to open serial port:", error);
@@ -79,7 +85,6 @@ function processSerialData(data) {
   }
 }
 
-
 // Retrieve sensor data
 function getSensorData(type) {
   return sensorData[type] ?? 0; // Return 0 if not available
@@ -87,6 +92,10 @@ function getSensorData(type) {
 
 // Draw sensor data on the canvas
 function draw() {
+  if (!isConnected) {
+    return; // Only draw if connected to Arduino
+  }
+
   joystickX = getSensorData("analog1");
   joystickY = getSensorData("analog0");
   joystickButton = getSensorData("digital6");
@@ -106,10 +115,27 @@ function draw() {
   // }
   console.log(joystickX, joystickY, joystickButton, button1, button2);
 
-  let mappedX = map(joystickX, 0, 1023, 0+20, width - 20);
-  let mappedY = map(joystickY, 0, 1023, 0+20, height - 20);
+  let mappedX = map(joystickX, 0, 1023, -1, 1);
+  let mappedY = map(joystickY, 0, 1023, -1, 1);
 
-  circle(mappedX, mappedY, 20);
+  const maxSpeed = 5;
+
+  // Create a vector from the mapped joystick values
+  let movement = createVector(mappedX, mappedY);
+
+  // Scale the vector by maxSpeed to control the speed of the circle
+  movement.mult(maxSpeed);
+
+  // Update the previous positions
+  prevX += movement.x;
+  prevY += movement.y;
+
+  // Constrain the circle within the canvas boundaries
+  prevX = constrain(prevX, 0, width);
+  prevY = constrain(prevY, 0, height);
+
+  // Draw the circle at the new position
+  circle(prevX, prevY, 20);
 }
 
 // Class to handle line breaks in serial data
