@@ -1,8 +1,6 @@
-// let port, reader, writer;
-// let pinsUsed = ["apin0", "apin1", "dpin2", "dpin4", "dpin6"]; // List of pins used in the Arduino
-// let sensorData = {}; // Object to store sensor readings
-// let connectButton;
-// let isConnected = false; // Flag to indicate if Arduino is connected
+let frameInterval = 80; 
+let imageIndex = 0; 
+let toggle = true; 
 let assetPath = "UJCMDonut/gameAssets/";
 let gameAssets = [
   ["Title1.png", "Title2.png", "background.png"],
@@ -13,6 +11,13 @@ let gameAssets = [
 ];
 
 let images = [];
+let imageSizes = [
+  [null, null, null], // Sizes for Title1, Title2, background
+  [null, null, null, null, null, null], // Sizes for donuts
+  [null, null, null, null], // Sizes for frostings
+  [null, null, null, null], // Sizes for toppings
+  [null, null] // Sizes for ciderGlass, tractor
+];
 
 function preload() {
   for (let i = 0; i < gameAssets.length; i++) {
@@ -21,8 +26,8 @@ function preload() {
       let path = assetPath + gameAssets[i][j];
       images[i][j] = loadImage(
         path,
-        () => console.log(`Loaded: ${path}`), // Success callback
-        () => console.error(`Failed to load: ${path}`) // Failure callback
+        () => console.log(`Loaded: ${path}`),
+        () => console.error(`Failed to load: ${path}`)
       );
     }
   }
@@ -33,132 +38,85 @@ function setup() {
   translate(width / 2, height / 2);
   imageMode(CENTER); // Set image mode to center for proper positioning
 
-  // connectButton = createButton("Connect to Arduino");
-  // connectButton.position(20, 20);
-  // connectButton.mousePressed(connectToArduino);
+  // Define image sizes based on canvas dimensions
+  imageSizes = [
+    [height, height, height], // Sizes for Title1, Title2, background
+    [height / 4, height / 4, height / 4, height / 4, height / 4, height / 4], // Sizes for donuts
+    [height / 4, height / 4, height / 4, height / 4], // Sizes for frostings
+    [height / 4, height / 4, height / 4, height / 4], // Sizes for toppings
+    [height / 6, height / 6] // Sizes for ciderGlass, tractor
+  ];
+
+  // Resize images after they are loaded
+  for (let i = 0; i < images.length; i++) {
+    for (let j = 0; j < images[i].length; j++) {
+      let img = images[i][j];
+      if (img) {
+        let newHeight = imageSizes[i][j];
+        let newWidth = (img.width / img.height) * newHeight; // Maintain aspect ratio
+        img.resize(newWidth, newHeight);
+        console.log(`Resized: ${gameAssets[i][j]} to ${newWidth}x${newHeight}`);
+      }
+    }
+  }
 
   background("white");
 }
 
-// Connect to Arduino and set up serial communication
-// async function connectToArduino() {
-//   try {
-//     port = await navigator.serial.requestPort();
-//     await port.open({ baudRate: 9600 });
+let gameStarted = false; //has the game started?
 
-//     const textDecoder = new TextDecoderStream();
-//     const textEncoder = new TextEncoderStream();
-//     port.readable.pipeTo(textDecoder.writable);
-//     textEncoder.readable.pipeTo(port.writable);
-
-//     reader = textDecoder.readable
-//       .pipeThrough(new TransformStream(new LineBreakTransformer()))
-//       .getReader();
-//     writer = textEncoder.writable.getWriter();
-
-//     console.log("Connected to Arduino!");
-//     connectButton.remove();
-//     isConnected = true; // Set flag to true when connected
-//     runSerial();
-//   } catch (error) {
-//     console.error("Failed to open serial port:", error);
-//   }
-// }
-
-// Read serial data and process sensor values
-// async function runSerial() {
-//   try {
-//     while (true) {
-//       const { value, done } = await reader.read();
-//       if (done) {
-//         reader.releaseLock();
-//         break;
-//       }
-//       processSerialData(value);
-//     }
-//   } catch (error) {
-//     console.error("Error reading serial data:", error);
-//   }
-// }
-
-// Parse and store sensor values
-// function processSerialData(data) {
-//   let values = data.split(",").map(parseFloat);
-
-//   if (values.length >= 18) {
-//     sensorData = {}; // Reset object
-
-//     // set analog pins to either the value or empty string
-//     for (let i = 0; i <= 5; i++) {
-//       let pinName = `apin${i}`;
-//       if (pinsUsed.includes(pinName)) {
-//         sensorData[`analog${i}`] = values[i];
-//       } else {
-//         sensorData[`analog${i}`] = null;
-//       }
-//     }
-//     // set digital pins to either the value or empty string
-//     for (let i = 2; i <= 13; i++) {
-//       let pinName = `dpin${i}`;
-//       let index = i + 4; //start from index 6 in values array
-//       if (pinsUsed.includes(pinName)) {
-//         sensorData[`digital${i}`] = values[index];
-//       } else {
-//         sensorData[`digital${i}`] = null;
-//       }
-//     }
-//   }
-// }
-
-// Retrieve sensor data
-// function getSensorData(type) {
-//   return sensorData[type] ?? 0; // Return 0 if not available
-// }
-
-function startPage(){
-  translate(width / 2, height / 2);
-    //images are displayed by calling images[i][j] where i is the index of the type of asset and j is the index of the image in that array, the final params are the location
-  images[0][0].resize(0, height); 
-  image(images[0][0], 0, 0);
+function keyPressed() {
+  if (keyCode === 32) { // 32 is the keyCode for the space bar
+    gameStarted = true; // Set the gameStarted flag to true
+    console.log("Space bar pressed, game started");
+  }
 }
 
+function startPage() {
+  if (gameStarted) {
+    console.log("Game started");
+    image(images[0][2], 0, 0); // Draw the background image
+    donut();
+    frosting();
+    topping();
+  } else {
+    // Toggle between title frames
+    if (toggle) {
+      imageIndex = 0;
+    } else {
+      imageIndex = 1;
+    }
+
+    image(images[0][imageIndex], 0, 0); // Draw the title images
+
+    // Flip the image per the global frameInterval
+    if (frameCount % frameInterval === 0) {
+      toggle = !toggle;
+      console.log("Toggle state:", toggle);
+    }
+  }
+}
+
+function donut(){
+  image(images[1][0], 0, height/4);
+}
+function frosting(){
+  image(images[2][0], 0, 0);
+}
+function topping(){
+  image(images[3][0], 0, -height/4);
+}
 
 function draw() {
-  // if (!isConnected) {
-  //   return; // Only draw if connected to Arduino
-  // }
+  background("white"); // Clear the canvas
+  translate(width / 2, height / 2); // Center the canvas
 
-  // name the pin values, sample below
-  //joystickX = getSensorData("analog1");
+  // Ensure all images are loaded before drawing
+  let allImagesLoaded = images.every(row => row.every(img => img && img.width > 0 && img.height > 0));
 
-  //textSize(14);
-  // let yOffset = 100;
-  // for (let i = 0; i <= 5; i++) {
-  //   text(`A${i}: ${getSensorData(`analog${i}`)}`, 20, yOffset);
-  //   yOffset += 30;
-  // }
-
-  // for (let i = 2; i <= 13; i++) {
-  //   text(`D${i}: ${getSensorData(`digital${i}`)}`, 20, yOffset);
-  //   yOffset += 30;
-  // }
-
+  if (allImagesLoaded) {
+    startPage();
+  } else {
+    console.log("Images are not fully loaded yet.");
+  }
 }
-
-// Class to handle line breaks in serial data
-// class LineBreakTransformer {
-//   constructor() {
-//     this.chunks = "";
-//   }
-
-//   transform(chunk, controller) {
-//     this.chunks += chunk;
-//     const lines = this.chunks.split("\r\n");
-//     this.chunks = lines.pop();
-//     lines.forEach((line) => controller.enqueue(line));
-//   }
-
-//   flush(controller) {
-//     controller.enqueue(this.chunks);
-//   }
-// }
