@@ -146,17 +146,29 @@ function startPage() {
 
 function donut() {
   let index = selectedIndices[0];
-  image(images[1][index], 0, height / 4 + 40);
+  let scale = currentCategory === 1 ? 1.2 : 1; // Scale up if this category is selected
+  let img = images[1][index];
+  if (img) {
+    image(img, 0, height / 4 + 40, img.width * scale, img.height * scale);
+  }
 }
 
 function frosting() {
   let index = selectedIndices[1];
-  image(images[2][index], 0, 40);
+  let scale = currentCategory === 2 ? 1.2 : 1; // Scale up if this category is selected
+  let img = images[2][index];
+  if (img) {
+    image(img, 0, 40, img.width * scale, img.height * scale);
+  }
 }
 
 function topping() {
   let index = selectedIndices[2];
-  image(images[3][index], 0, -height / 4 + 40);
+  let scale = currentCategory === 3 ? 1.2 : 1; // Scale up if this category is selected
+  let img = images[3][index];
+  if (img) {
+    image(img, 0, -height / 4 + 40, img.width * scale, img.height * scale);
+  }
 }
 
 function draw() {
