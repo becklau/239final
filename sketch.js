@@ -167,7 +167,7 @@ function topping() {
   let scale = currentCategory === 3 ? 1.2 : 1; // Scale up if this category is selected
   let img = images[3][index];
   if (img) {
-    image(img, 0, -height / 4 + 40, img.width * scale, img.height * scale);
+    image(img, 0, -height / 4 + 80, img.width * scale, img.height * scale);
   }
 }
 
