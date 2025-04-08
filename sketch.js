@@ -1,6 +1,8 @@
-let frameInterval = 80; 
+let frameInterval = 60; 
 let imageIndex = 0; 
 let toggle = true; 
+let currentCategory = 1; // 1 = donut, 2 = frosting, 3 = topping
+let selectedIndices = [0, 0, 0]; // donut, frosting, topping
 let assetPath = "UJCMDonut/gameAssets/";
 let gameAssets = [
   ["Title1.png", "Title2.png", "background.png"],
@@ -42,8 +44,8 @@ function setup() {
   imageSizes = [
     [height, height, height], // Sizes for Title1, Title2, background
     [height / 4, height / 4, height / 4, height / 4, height / 4, height / 4], // Sizes for donuts
-    [height / 4, height / 4, height / 4, height / 4], // Sizes for frostings
-    [height / 4, height / 4, height / 4, height / 4], // Sizes for toppings
+    [height / 6, height / 6, height / 6, height / 6], // Sizes for frostings
+    [height / 6, height / 6, height / 6, height / 6], // Sizes for toppings
     [height / 6, height / 6] // Sizes for ciderGlass, tractor
   ];
 
@@ -66,11 +68,56 @@ function setup() {
 let gameStarted = false; //has the game started?
 
 function keyPressed() {
-  if (keyCode === 32) { // 32 is the keyCode for the space bar
-    gameStarted = true; // Set the gameStarted flag to true
-    console.log("Space bar pressed, game started");
+  if (keyCode === 32) {
+    gameStarted = true;
+    return;
   }
+
+  if (!gameStarted) return;
+
+  // Move UP through categories
+  if (keyCode === DOWN_ARROW) {
+    currentCategory = currentCategory - 1;
+    if (currentCategory < 1) {
+      currentCategory = 3; // Loop back to the last category if we go above the first
+    }
+  }
+
+  // Move DOWN through categories
+  else if (keyCode === UP_ARROW) {
+    currentCategory = currentCategory + 1;
+    if (currentCategory > 3) {
+      currentCategory = 1; // Loop back to the first category if we go past the last
+    }
+  }
+
+  // Move LEFT through options in the current category
+  else if (keyCode === LEFT_ARROW) {
+    let currentSelection = selectedIndices[currentCategory - 1];
+    currentSelection = currentSelection - 1;
+
+    if (currentSelection < 0) {
+      currentSelection = images[currentCategory].length - 1; // Go to the last option if we go past the first
+    }
+
+    selectedIndices[currentCategory - 1] = currentSelection;
+  }
+
+  // Move RIGHT through options in the current category
+  else if (keyCode === RIGHT_ARROW) {
+    let currentSelection = selectedIndices[currentCategory - 1];
+    currentSelection = currentSelection + 1;
+
+    if (currentSelection >= images[currentCategory].length) {
+      currentSelection = 0; // Go to the first option if we go past the last
+    }
+
+    selectedIndices[currentCategory - 1] = currentSelection;
+  }
+
+  console.log("Category:", currentCategory, "Selections:", selectedIndices);
 }
+
 
 function startPage() {
   if (gameStarted) {
@@ -97,14 +144,19 @@ function startPage() {
   }
 }
 
-function donut(){
-  image(images[1][0], 0, height/4);
+function donut() {
+  let index = selectedIndices[0];
+  image(images[1][index], 0, height / 4 + 40);
 }
-function frosting(){
-  image(images[2][0], 0, 0);
+
+function frosting() {
+  let index = selectedIndices[1];
+  image(images[2][index], 0, 40);
 }
-function topping(){
-  image(images[3][0], 0, -height/4);
+
+function topping() {
+  let index = selectedIndices[2];
+  image(images[3][index], 0, -height / 4 + 40);
 }
 
 function draw() {
