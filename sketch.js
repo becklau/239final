@@ -68,7 +68,7 @@ function setup() {
 let gameStarted = false; //has the game started?
 
 function keyPressed() {
-  if (keyCode === 32 || keyCode === 297) {
+  if (keyCode === 32 || keyCode === 297 || keyCode === 90005) {
     gameStarted = true;
     return;
   }
@@ -76,7 +76,7 @@ function keyPressed() {
   if (!gameStarted) return;
 
   // Move UP through categories
-  if (keyCode === DOWN_ARROW || keyCode === 290) {
+  if (keyCode === DOWN_ARROW || keyCode === 290  || keyCode === 90003) {
     currentCategory = currentCategory - 1;
     if (currentCategory < 1) {
       currentCategory = 3; // Loop back to the last category if we go above the first
@@ -84,7 +84,7 @@ function keyPressed() {
   }
 
   // Move DOWN through categories
-  else if (keyCode === UP_ARROW || keyCode === 288) {
+  else if (keyCode === UP_ARROW || keyCode === 288 || keyCode === 90001) {
     currentCategory = currentCategory + 1;
     if (currentCategory > 3) {
       currentCategory = 1; // Loop back to the first category if we go past the last
@@ -92,7 +92,7 @@ function keyPressed() {
   }
 
   // Move LEFT through options in the current category
-  else if (keyCode === LEFT_ARROW || keyCode === 291) {
+  else if (keyCode === LEFT_ARROW || keyCode === 291 || keyCode === 90004) {
     let currentSelection = selectedIndices[currentCategory - 1];
     currentSelection = currentSelection - 1;
 
@@ -104,7 +104,7 @@ function keyPressed() {
   }
 
   // Move RIGHT through options in the current category
-  else if (keyCode === RIGHT_ARROW || keyCode === 289) {
+  else if (keyCode === RIGHT_ARROW || keyCode === 289  || keyCode === 90002) {
     let currentSelection = selectedIndices[currentCategory - 1];
     currentSelection = currentSelection + 1;
 
