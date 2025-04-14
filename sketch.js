@@ -107,56 +107,56 @@ function gamepadHandler(event, connecting) {
 
 let gameStarted = false; //has the game started?
 
-function keyPressed() {
-  if (keyCode === 32) {
-    gameStarted = true;
-    return;
-  }
+// function keyPressed() {
+//   if (keyCode === 32) {
+//     gameStarted = true;
+//     return;
+//   }
 
-  if (!gameStarted) return;
+//   if (!gameStarted) return;
 
-  // Move UP through categories
-  if (keyCode === DOWN_ARROW) {
-    currentCategory = currentCategory - 1;
-    if (currentCategory < 1) {
-      currentCategory = 3; // Loop back to the last category if we go above the first
-    }
-  }
+//   // Move UP through categories
+//   if (keyCode === DOWN_ARROW) {
+//     currentCategory = currentCategory - 1;
+//     if (currentCategory < 1) {
+//       currentCategory = 3; // Loop back to the last category if we go above the first
+//     }
+//   }
 
-  // Move DOWN through categories
-  else if (keyCode === UP_ARROW) {
-    currentCategory = currentCategory + 1;
-    if (currentCategory > 3) {
-      currentCategory = 1; // Loop back to the first category if we go past the last
-    }
-  }
+//   // Move DOWN through categories
+//   else if (keyCode === UP_ARROW) {
+//     currentCategory = currentCategory + 1;
+//     if (currentCategory > 3) {
+//       currentCategory = 1; // Loop back to the first category if we go past the last
+//     }
+//   }
 
-  // Move LEFT through options in the current category
-  else if (keyCode === LEFT_ARROW) {
-    let currentSelection = selectedIndices[currentCategory - 1];
-    currentSelection = currentSelection - 1;
+//   // Move LEFT through options in the current category
+//   else if (keyCode === LEFT_ARROW) {
+//     let currentSelection = selectedIndices[currentCategory - 1];
+//     currentSelection = currentSelection - 1;
 
-    if (currentSelection < 0) {
-      currentSelection = images[currentCategory].length - 1; // Go to the last option if we go past the first
-    }
+//     if (currentSelection < 0) {
+//       currentSelection = images[currentCategory].length - 1; // Go to the last option if we go past the first
+//     }
 
-    selectedIndices[currentCategory - 1] = currentSelection;
-  }
+//     selectedIndices[currentCategory - 1] = currentSelection;
+//   }
 
-  // Move RIGHT through options in the current category
-  else if (keyCode === RIGHT_ARROW) {
-    let currentSelection = selectedIndices[currentCategory - 1];
-    currentSelection = currentSelection + 1;
+//   // Move RIGHT through options in the current category
+//   else if (keyCode === RIGHT_ARROW) {
+//     let currentSelection = selectedIndices[currentCategory - 1];
+//     currentSelection = currentSelection + 1;
 
-    if (currentSelection >= images[currentCategory].length) {
-      currentSelection = 0; // Go to the first option if we go past the last
-    }
+//     if (currentSelection >= images[currentCategory].length) {
+//       currentSelection = 0; // Go to the first option if we go past the last
+//     }
 
-    selectedIndices[currentCategory - 1] = currentSelection;
-  }
+//     selectedIndices[currentCategory - 1] = currentSelection;
+//   }
 
-  console.log("Category:", currentCategory, "Selections:", selectedIndices);
-}
+//   console.log("Category:", currentCategory, "Selections:", selectedIndices);
+// }
 
 function startPage() {
   if (gameStarted) {
