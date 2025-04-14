@@ -1,6 +1,18 @@
+const GAMEPAD_BUTTONS = {
+  BTN_TRIGGER: 0,
+  BTN_THUMB: 1,
+  BTN_THUMB2: 2,
+  BTN_TOP: 3,
+  BTN_TOP2: 4
+};
+
 let frameInterval = 60; 
 let imageIndex = 0; 
 let toggle = true; 
+let controllers = []
+let released = [];
+let pressed = [];
+let justPressed = []; // New array to track "just pressed" state
 let currentCategory = 1; // 1 = donut, 2 = frosting, 3 = topping
 let selectedIndices = [0, 0, 0]; // donut, frosting, topping
 let assetPath = "UJCMDonut/gameAssets/";
@@ -21,6 +33,8 @@ let imageSizes = [
   [null, null] // Sizes for ciderGlass, tractor
 ];
 
+let buttons = []; // Define a global buttons array
+
 function preload() {
   for (let i = 0; i < gameAssets.length; i++) {
     images[i] = [];
@@ -40,6 +54,22 @@ function setup() {
   translate(width / 2, height / 2);
   imageMode(CENTER); // Set image mode to center for proper positioning
 
+  window.addEventListener("gamepadconnected", function(e) {
+    gamepadHandler(e, true);
+    console.log("Gamepad connected at index %d: %s. %d buttons, %d axes.",
+      e.gamepad.index, e.gamepad.id,
+      e.gamepad.buttons.length, e.gamepad.axes.length);
+  });
+  window.addEventListener("gamepaddisconnected", function(e) {
+    console.log("Gamepad disconnected from index %d: %s",
+      e.gamepad.index, e.gamepad.id);
+    gamepadHandler(e, false);
+  });
+  for (var i = 0; i < 17; i++) {
+    released[i] = true;
+    pressed[i] = false;
+    justPressed[i] = false; // Initialize "just pressed" state
+  }
   // Define image sizes based on canvas dimensions
   imageSizes = [
     [height, height, height], // Sizes for Title1, Title2, background
@@ -65,10 +95,20 @@ function setup() {
   background("white");
 }
 
+function gamepadHandler(event, connecting) {
+  let gamepad = event.gamepad;
+  if (connecting) {
+    print("Connecting to controller " + gamepad.index);
+    controllers[gamepad.index] = gamepad;
+  } else {
+    delete controllers[gamepad.index];
+  }
+}
+
 let gameStarted = false; //has the game started?
 
 function keyPressed() {
-  if (keyCode === 32 || keyCode === BTN_TOP2) {
+  if (keyCode === 32) {
     gameStarted = true;
     return;
   }
@@ -76,7 +116,7 @@ function keyPressed() {
   if (!gameStarted) return;
 
   // Move UP through categories
-  if (keyCode === DOWN_ARROW || keyCode === BTN_THUMB2) {
+  if (keyCode === DOWN_ARROW) {
     currentCategory = currentCategory - 1;
     if (currentCategory < 1) {
       currentCategory = 3; // Loop back to the last category if we go above the first
@@ -84,7 +124,7 @@ function keyPressed() {
   }
 
   // Move DOWN through categories
-  else if (keyCode === UP_ARROW || keyCode === TRIGGER) {
+  else if (keyCode === UP_ARROW) {
     currentCategory = currentCategory + 1;
     if (currentCategory > 3) {
       currentCategory = 1; // Loop back to the first category if we go past the last
@@ -92,7 +132,7 @@ function keyPressed() {
   }
 
   // Move LEFT through options in the current category
-  else if (keyCode === LEFT_ARROW || keyCode === BTN_TOP) {
+  else if (keyCode === LEFT_ARROW) {
     let currentSelection = selectedIndices[currentCategory - 1];
     currentSelection = currentSelection - 1;
 
@@ -104,7 +144,7 @@ function keyPressed() {
   }
 
   // Move RIGHT through options in the current category
-  else if (keyCode === RIGHT_ARROW || keyCode === BTN_THUMB) {
+  else if (keyCode === RIGHT_ARROW) {
     let currentSelection = selectedIndices[currentCategory - 1];
     currentSelection = currentSelection + 1;
 
@@ -117,7 +157,6 @@ function keyPressed() {
 
   console.log("Category:", currentCategory, "Selections:", selectedIndices);
 }
-
 
 function startPage() {
   if (gameStarted) {
@@ -171,9 +210,91 @@ function topping() {
   }
 }
 
+function updateGamepadState() {
+  let gamepads = navigator.getGamepads();
+  if (gamepads[0]) { // Check if a gamepad is connected
+    let gamepad = gamepads[0];
+    for (let i = 0; i < gamepad.buttons.length; i++) {
+      let isPressed = gamepad.buttons[i].pressed;
+
+      if (isPressed && released[i]) {
+        // Button was just pressed
+        pressed[i] = true;
+        justPressed[i] = true; // Mark as "just pressed"
+        released[i] = false;
+      } else if (!isPressed) {
+        // Button is released
+        released[i] = true;
+        pressed[i] = false;
+        justPressed[i] = false; // Reset "just pressed" state
+      }
+    }
+  }
+}
+
+function handleGamepadInput() {
+  if (!gameStarted) {
+    if (justPressed[GAMEPAD_BUTTONS.BTN_TOP2]) {
+      gameStarted = true;
+    }
+    return;
+  }
+
+  // Move UP through categories
+  if (justPressed[GAMEPAD_BUTTONS.BTN_THUMB2]) {
+    currentCategory = currentCategory - 1;
+    if (currentCategory < 1) {
+      currentCategory = 3; // Loop back to the last category if we go above the first
+    }
+  }
+
+  // Move DOWN through categories
+  if (justPressed[GAMEPAD_BUTTONS.BTN_TRIGGER]) {
+    currentCategory = currentCategory + 1;
+    if (currentCategory > 3) {
+      currentCategory = 1; // Loop back to the first category if we go past the last
+    }
+  }
+
+  // Move LEFT through options in the current category
+  if (justPressed[GAMEPAD_BUTTONS.BTN_TOP]) {
+    let currentSelection = selectedIndices[currentCategory - 1];
+    currentSelection = currentSelection - 1;
+
+    if (currentSelection < 0) {
+      currentSelection = images[currentCategory].length - 1; // Go to the last option if we go past the first
+    }
+
+    selectedIndices[currentCategory - 1] = currentSelection;
+  }
+
+  // Move RIGHT through options in the current category
+  if (justPressed[GAMEPAD_BUTTONS.BTN_THUMB]) {
+    let currentSelection = selectedIndices[currentCategory - 1];
+    currentSelection = currentSelection + 1;
+
+    if (currentSelection >= images[currentCategory].length) {
+      currentSelection = 0; // Go to the first option if we go past the last
+    }
+
+    selectedIndices[currentCategory - 1] = currentSelection;
+  }
+
+  // Reset the justPressed array after handling input
+  for (let i = 0; i < justPressed.length; i++) {
+    justPressed[i] = false;
+  }
+}
+
 function draw() {
   background("white"); // Clear the canvas
   translate(width / 2, height / 2); // Center the canvas
+
+  // Update gamepad state
+  updateGamepadState();
+
+  // Handle gamepad input
+  handleGamepadInput();
 
   // Ensure all images are loaded before drawing
   let allImagesLoaded = images.every(row => row.every(img => img && img.width > 0 && img.height > 0));
