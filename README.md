@@ -1,9 +1,5 @@
-# arduinoSample
+# Build Your Own Donut
 
-ArduinoSample is code that connects an arduino to a p5.js vscode environment.
+Build Your Own Donut is a game created for Uncle John's Cider Mill, to create a fun way to show off all of the new donut varieties. 
 
-The sampleArd.ide file must be pushed to the board just once! It will set up the analog and digital pins to recieve inputs from the board, and will send that data to p5.js in a "csv" style format, where the first 6 values are pins A0-A5, and the next 12 pins will be D2-D13.
-
-In the sketch.js file, just add the pins you are using to the pinsUsed array in the format of apin0, apin1, exc. and dpin2, dpin3, exc.
-
-This will set only those values to an int/float, and the pins not in use will be set to null. This accounts for charge leakage for other pins.
+This code is built to work on a Raspberry Pi 4. This pi connects to a [DSI screen](https://www.amazon.com/dp/B0D3QB7X4Z) and uses a plug and play [arcade button system](https://www.amazon.com/dp/B01M2X88QP) The game is created in a p5.js environment. 
