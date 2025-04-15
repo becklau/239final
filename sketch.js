@@ -19,7 +19,7 @@ let assetPath = "UJCMDonut/gameAssets/";
 let gameAssets = [
   ["Title1.png", "Title2.png", "background.png", "background2.png", "button.png"],
   ["Bismark.png", "CiderMill.png", "LongJohn.png", "TractorTire.png", "Yeast.png", "SourCream.png"],
-  ["pinkFrosting.png", "chocFrosting.png", "whiteFrosting.png", "glaze.png"],
+  ["pinkFrosting.png", "chocFrosting.png", "whiteFrosting.png"],
   ["ranbowSprinkles.png", "chocSprinkles.png", "whiteDrizzle.png", "chocDrizzle.png", "pinkDrizzle.png"],
   [
     ["bismark/choc.png", "bismark/white.png", "bismark/pink.png", "bismark/rainbowS.png", "bismark/chocS.png", "bismark/pinkD.png", "bismark/chocD.png", "bismark/whiteD.png"], 
@@ -38,24 +38,28 @@ function preload() {
   for (let i = 0; i < gameAssets.length; i++) {
     images[i] = [];
     for (let j = 0; j < gameAssets[i].length; j++) {
-      if (Array.isArray(gameAssets[i][j])) {
-        // Handle nested arrays
-        images[i][j] = [];
-        for (let k = 0; k < gameAssets[i][j].length; k++) {
-          let path = assetPath + gameAssets[i][j][k];
-          images[i][j][k] = loadImage(
+      if (gameAssets[i][j]) { // Ensure the element exists
+        if (Array.isArray(gameAssets[i][j])) {
+          // Handle nested arrays
+          images[i][j] = [];
+          for (let k = 0; k < gameAssets[i][j].length; k++) {
+            let path = assetPath + gameAssets[i][j][k];
+            images[i][j][k] = loadImage(
+              path,
+              () => console.log(`Loaded: ${path}`),
+              () => console.error(`Failed to load: ${path}`)
+            );
+          }
+        } else {
+          let path = assetPath + gameAssets[i][j];
+          images[i][j] = loadImage(
             path,
             () => console.log(`Loaded: ${path}`),
             () => console.error(`Failed to load: ${path}`)
           );
         }
       } else {
-        let path = assetPath + gameAssets[i][j];
-        images[i][j] = loadImage(
-          path,
-          () => console.log(`Loaded: ${path}`),
-          () => console.error(`Failed to load: ${path}`)
-        );
+        console.error(`Undefined asset at gameAssets[${i}][${j}]`);
       }
     }
   }
@@ -86,11 +90,11 @@ function setup() {
 
   // Define image sizes dynamically based on canvas dimensions
   imageSizes = [
-    [height, height, height, height, height], // Sizes for Title1, Title2, background
+    [height, height, height, height, height/12], // Sizes for Title1, Title2, background
     Array(6).fill(height / 4), // Sizes for donuts
-    Array(4).fill(height / 6), // Sizes for frostings
-    Array(5).fill(height / 6), // Sizes for toppings
-    Array(6).fill(Array(8).fill(height / 8)) // Sizes for nested topping variations
+    Array(4).fill(height / 4), // Sizes for frostings
+    Array(5).fill(height / 4), // Sizes for toppings
+    Array(6).fill(Array(8).fill(height / 6)) // Sizes for nested topping variations
   ];
 
   // Resize images after they are loaded
@@ -163,19 +167,23 @@ function donut() {
 
 function frosting() {
   let index = selectedIndices[1];
-  let scale = currentCategory === 2 ? 1.2 : 1;
-  let img = images[2][index];
-  if (img) {
+  if (images[2] && images[2][index]) {
+    let scale = currentCategory === 2 ? 1.2 : 1;
+    let img = images[2][index];
     image(img, 0, 40, img.width * scale, img.height * scale);
+  } else {
+    console.error("Frosting image not found at index:", index);
   }
 }
 
 function topping() {
   let index = selectedIndices[2];
-  let scale = currentCategory === 3 ? 1.2 : 1;
-  let img = images[3][index];
-  if (img) {
+  if (images[3] && images[3][index]) {
+    let scale = currentCategory === 3 ? 1.2 : 1;
+    let img = images[3][index];
     image(img, 0, -height / 4 + 80, img.width * scale, img.height * scale);
+  } else {
+    console.error("Topping image not found at index:", index);
   }
 }
 
@@ -253,6 +261,12 @@ function handleGamepadInput() {
   for (let i = 0; i < justPressed.length; i++) {
     justPressed[i] = false;
   }
+
+  selectedIndices = [
+    Math.min(selectedIndices[0], images[1].length - 1),
+    Math.min(selectedIndices[1], images[2].length - 1),
+    Math.min(selectedIndices[2], images[3].length - 1)
+  ];
 }
 
 function draw() {
@@ -274,5 +288,15 @@ function draw() {
     startPage();
   } else {
     console.log("Images are not fully loaded yet.");
+  }
+
+  console.log("Images array:", images);
+  console.log("Selected indices:", selectedIndices);
+}
+
+function keyPressed() {
+  if (!gameStarted && key === ' ') {
+    gameStarted = true; // Start the game when space is pressed
+    console.log("Game started via space key");
   }
 }
