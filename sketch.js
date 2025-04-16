@@ -168,6 +168,7 @@ function updateGamepadState() {
         pressed[i] = true;
         justPressed[i] = true; // Mark as "just pressed"
         released[i] = false;
+        console.log(`Button ${i} just pressed`); // Debug log
       } else if (!isPressed) {
         // Button is released
         released[i] = true;
@@ -184,7 +185,7 @@ function handleGamepadInput() {
   if (justPressed[GAMEPAD_BUTTONS.BTN_TOP2]) {
     gameState = (gameState + 1) % 3; // Cycle through states: 0 -> 1 -> 2 -> 0
     justPressed[GAMEPAD_BUTTONS.BTN_TOP2] = false; // Reset the justPressed state for this button
-    return;
+    return; // Exit the function to avoid further processing
   }
 
   if (gameState === 1) {
@@ -267,7 +268,7 @@ function frosting() {
     image(img, 0, 40, img.width * scale, img.height * scale);
     return gameAssets[2][index];
   } else {
-    console.error("Frosting image not found at index:", index);
+    //console.error("Frosting image not found at index:", index);
     return null;
   }
 }
@@ -282,7 +283,7 @@ function topping() {
     image(img, 0, -height / 4 + 80, img.width * scale, img.height * scale);
     return gameAssets[3][index]; // Return the string name of the topping
   } else {
-    console.error("Topping image not found at index:", index);
+    //console.error("Topping image not found at index:", index);
     return null; // Return null if the topping is not found
   }
 }
@@ -301,7 +302,7 @@ function startPage() {
 
     if (frameCount % frameInterval === 0) {
       toggle = !toggle;
-      console.log("Toggle state:", toggle);
+      //console.log("Toggle state:", toggle);
     }
   } else if (gameState === 1) {
     // Mix-and-match page
@@ -343,10 +344,10 @@ function finalDonutMaker(donut, frosting, topping) {
     if (donutImg) {
       image(donutImg, 0, 40, donutImg.width*1.5, donutImg.height*1.5);
     } else {
-      console.error("Donut image not found for index:", donutIndex);
+      //.error("Donut image not found for index:", donutIndex);
     }
   } else {
-    console.error("Invalid donut type:", donut);
+    //console.error("Invalid donut type:", donut);
   }
 
   // Determine frostingIndex
