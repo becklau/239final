@@ -180,8 +180,10 @@ function updateGamepadState() {
 
 //----Navigates through game pages and mix-n-match states----
 function handleGamepadInput() {
+  // Check if BTN_TOP2 was just pressed and released
   if (justPressed[GAMEPAD_BUTTONS.BTN_TOP2]) {
     gameState = (gameState + 1) % 3; // Cycle through states: 0 -> 1 -> 2 -> 0
+    justPressed[GAMEPAD_BUTTONS.BTN_TOP2] = false; // Reset the justPressed state for this button
     return;
   }
 
